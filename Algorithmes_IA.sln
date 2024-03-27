@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34701.34
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Algorithmes_IA", "Algorithmes_IA\Algorithmes_IA.pyproj", "{5E610E83-89DD-4504-8520-AEC624E3765B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5E610E83-89DD-4504-8520-AEC624E3765B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E610E83-89DD-4504-8520-AEC624E3765B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {85BD3581-13DC-4EB6-B43B-AFCE47565BA2}
+	EndGlobalSection
+EndGlobal
