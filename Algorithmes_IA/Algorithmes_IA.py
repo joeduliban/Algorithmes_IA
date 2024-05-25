@@ -23,96 +23,126 @@ def heuristic(position, end):
     return abs(position[0] - end[0]) + abs(position[1] - end[1])
 
 def astar(start, end):
-    frontier = [(0 + heuristic(start, end), 0, start, [])]
+    frontier = [(0, 0, start, [])]
     visited = {start: None}
+    cost_so_far = {start: 0}
     
     while frontier:
         _, cost, current, path = heapq.heappop(frontier)
         if current == end:
             return creatPath(current, visited)
+        
         for direction in directions:
             next_position = (current[0] + direction[0], current[1] + direction[1])
-            # Vérifier si la prochaine position est valide
-            if labyrinth[next_position[0]][next_position[1]] == ' ' and next_position not in visited:
+            if 0 <= next_position[0] < len(labyrinth) and 0 <= next_position[1] < len(labyrinth[0]) \
+                    and labyrinth[next_position[0]][next_position[1]] != '#' and next_position not in visited:
                 new_path = path + [current]
-                new_cost = cost + 1  # Coût uniforme
-                heapq.heappush(frontier, (new_cost + heuristic(next_position, end), new_cost, next_position, new_path))
-                visited[next_position] = current
+                new_cost = cost_so_far[current] + 1
+                if next_position not in cost_so_far or new_cost < cost_so_far[next_position]:
+                    cost_so_far[next_position] = new_cost
+                    priority = new_cost + heuristic(next_position, end)
+                    heapq.heappush(frontier, (priority, new_cost, next_position, new_path))
+                    visited[next_position] = current
+    
+    return creatPath(current, visited)
     
 
-#def branch_and_bound(labyrinthe, start, end):
+def branch_and_bound(start, end):
+    # Crée une queue pour stocker les nœuds à explorer
+    queue = [(0, [start], start)]
 
-def uniform_cost_search(start, end):
-    current = start
-    frontier = [(0, [start])]
+    # Crée un dictionnaire pour stocker les coûts et les visiteurs
+    costs = {start: 0}
     visited = {start: None}
-    
-    while frontier and current != end:
-        cost, path = heapq.heappop(frontier)
+
+    while queue:
+        # Dépile le nœud avec le coût le plus bas
+        cost, path, current = heapq.heappop(queue)
+
+        # Si nous avons atteint l'objectif, retourne le chemin
         if current == end:
             return creatPath(current, visited)
+
+        # Explore les voisins du nœud courant
         for direction in directions:
             next_position = (current[0] + direction[0], current[1] + direction[1])
-            # Vérifier si la prochaine position est valide
-            if labyrinth[next_position[0]][next_position[1]] == ' ' and next_position not in visited:
+            if 0 <= next_position[0] < len(labyrinth) and 0 <= next_position[1] < len(labyrinth[0]) \
+                    and labyrinth[next_position[0]][next_position[1]] != '#':
                 new_path = path + [next_position]
-                new_cost = cost + 1  # Coût uniforme
-                est_cost = new_cost + heuristic(next_position, end)
-                heapq.heappush(frontier, (est_cost, new_path))
-                visited[next_position] = current
-                current = next_position
-    
-    # Si aucun chemin n'atteint l'objectif
+                new_cost = costs[current] + 1
+                if next_position not in costs or new_cost < costs[next_position]:
+                    costs[next_position] = new_cost
+                    visited[next_position] = current
+                    heapq.heappush(queue, (new_cost + heuristic(next_position, end), new_path, next_position))
+
+    # Si nous n'avons pas trouvé de chemin, retourne le chemin bloqué
     return creatPath(current, visited)
 
-def beam_search(start, end, beam_width):   
-    # Initialisation de la position actuelle
-    current = start
+def uniform_cost_search(start, end):
+    frontier = [(0, [start])]
+    visited = {start: None}
+    cost_so_far = {start: 0}
     
-    # Initialisation du beam avec le nœud de départ
-    beam = [(0, [start])]
+    while frontier:
+        cost, path = heapq.heappop(frontier)
+        current = path[-1]
+        if current == end:
+            return creatPath(current, visited)
+        
+        for direction in directions:
+            next_position = (current[0] + direction[0], current[1] + direction[1])
+            if 0 <= next_position[0] < len(labyrinth) and 0 <= next_position[1] < len(labyrinth[0]) \
+                    and labyrinth[next_position[0]][next_position[1]] != '#' and next_position not in visited:
+                new_path = path + [next_position]
+                new_cost = cost_so_far[current] + 1
+                if next_position not in cost_so_far or new_cost < cost_so_far[next_position]:
+                    cost_so_far[next_position] = new_cost
+                    heapq.heappush(frontier, (new_cost, new_path))
+                    visited[next_position] = current
+    
+    return creatPath(current, visited)
+
+def beam_search(start, end, beam_width):
+    beam = [[start]]
     visited = {start: None}
     
-    while beam and current != end:
-        beam.sort(key=lambda x: x[0])
+    while beam:
         new_beam = []
-        for cost, path in beam:
-            for direction in directions:
-                next_position = (path[-1][0] + direction[0], path[-1][1] + direction[1])
-                # Vérifier si la prochaine position est valide
-                if labyrinth[next_position[0]][next_position[1]] == ' ' and next_position not in visited:
-                    new_path = path + [next_position]
-                    new_beam.append((cost + 1, new_path))
-                    visited[next_position] = current
-                    current = next_position
-        if current == end:
+        for path in beam:
+            current = path[-1]
+            if current == end:
                 return creatPath(current, visited)
+            for direction in directions:
+                next_position = (current[0] + direction[0], current[1] + direction[1])
+                if 0 <= next_position[0] < len(labyrinth) and 0 <= next_position[1] < len(labyrinth[0]) \
+                        and labyrinth[next_position[0]][next_position[1]] != '#' and next_position not in visited:
+                    new_path = path + [next_position]
+                    new_beam.append(new_path)
+                    visited[next_position] = current
+        new_beam.sort(key=lambda x: len(x))
         beam = new_beam[:beam_width]
     
-    # Si aucun chemin n'atteint l'objectif
     return creatPath(current, visited)
 
 def greedy_search(start, end):
     current = start
-    visited = {start: None}
+    path = [current]
+    visited = {current: None}
     
     while current != end:
-        heuristiques = []
-        
+        best_score = float('inf')
+        best_next = None
         for direction in directions:
             next_position = (current[0] + direction[0], current[1] + direction[1])
-            # Calculer le coût heuristique (distance manhattan) jusqu'à l'objectif
-            heuristique = abs(next_position[0] - end[0]) + abs(next_position[1] - end[1])
-            heuristiques.append((heuristique, next_position))
-        
-        heuristiques.sort()
-        
-        for heuristique in heuristiques:
-            min_heuristic, next_position = heuristique
-            if labyrinth[next_position[0]][next_position[1]] == ' ':
-                visited[next_position] = current    
-                current = next_position
-                break;
+            if 0 <= next_position[0] < len(labyrinth) and 0 <= next_position[1] < len(labyrinth[0]) \
+                    and labyrinth[next_position[0]][next_position[1]] != '#' and next_position not in visited:
+                score = heuristic(next_position, end)
+                if score < best_score:
+                    best_score = score
+                    best_next = next_position
+        path.append(best_next)
+        visited[best_next] = current
+        current = best_next
     
     return creatPath(current, visited)
 
@@ -169,21 +199,26 @@ def printPath(name, path):
         print()
 
 labyrinth = [
-    "########################",
-    "   ##  ####        ##  #",
-    "   ##  ####  ####  ##  #",
-    "#  ##  ####  ####  ##   ",
-    "#                       ",
-    "#                      #",
-    "########################"
+    ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'],
+    [' ', ' ', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#', '#', ' '],
+    ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#', ' ', ' '],
+    ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' '],
+    ['#', ' ', ' ', '#', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', ' ', ' '],
+    ['#', ' ', ' ', '#', ' ', ' ', '#', ' ', '#', ' ', ' ', '#', ' ', ' '],
+    ['#', ' ', ' ', '#', ' ', ' ', '#', ' ', ' ', '#', ' ', ' ', '#', ' '],
+    ['#', ' ', ' ', '#', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#']
 ]
 
 start = (1, 0)
-end = (4, 23)
+end = (9, 13)
 
 printPath("BFS", bfs(start, end))
 printPath("Random Search", random_search(start, end))
 printPath("Greedy Search", greedy_search(start, end))
 printPath("Beam Search", beam_search(start, end, 4))
 printPath("Estimate-extended Uniform Cost", uniform_cost_search(start, end))
+printPath("Branch & Bound", branch_and_bound(start, end))
 printPath("A*", astar(start, end))
